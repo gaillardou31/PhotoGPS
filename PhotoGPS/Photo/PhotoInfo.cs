@@ -8,8 +8,23 @@ namespace PhotoGPS.Photo
     class PhotoInfo
     {
         string path;
-        DateTime priseDeVue, positionGps;
+        public string Path { get { return path; } }
+
+        DateTime priseDeVue;
+        public DateTime PriseDeVue { get { return priseDeVue; } }
+
+        DateTime positionGps;
         double lat, lon;
+        public double Lat { get { return lat; } }
+        public double Lon { get { return lon; } }
+
+        bool positionValid;
+        public bool PositionValid { get { return positionValid; } }
+
+        public override string ToString()
+        {
+            return PriseDeVue.ToString();
+        }
 
         public PhotoInfo()
         {
@@ -18,6 +33,7 @@ namespace PhotoGPS.Photo
             lat = 0;
             lon = 0;
             positionGps = DateTime.Now;
+            positionValid = false;
         }
 
         public PhotoInfo(string path, DateTime priseDeVue)
@@ -34,6 +50,7 @@ namespace PhotoGPS.Photo
             this.priseDeVue = priseDeVue;
             this.lat = lat;
             this.lon = lon;
+            positionValid = true;
         }
 
         public void setGpsPosition(double lat, double lon, DateTime positionGps)
@@ -41,6 +58,7 @@ namespace PhotoGPS.Photo
             this.lat = lat;
             this.lon = lon;
             this.positionGps = positionGps;
+            positionValid = true;
         }
     }
 }

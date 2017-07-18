@@ -88,18 +88,23 @@ namespace PhotoGPS
                 {
                     for (int trkpti = 0; trkpti < trk[trki].trkseg[trksegi].trkpt.Length; trkpti++)
                     {
-                        listePoints.Add(trk[trki].trkseg[trksegi].trkpt[trkpti]);
+                        if (trk[trki].trkseg[trksegi].trkpt[trkpti].timeSpecified)
+                            listePoints.Add(trk[trki].trkseg[trksegi].trkpt[trkpti]);
                     }
                 }
             }
 
             if (listePoints.Count == 0)
                 return;
+
+            // tri des photos par date de prise de vue
+            listePoints = listePoints.OrderBy(x => x.time).ToList();
             #endregion
 
             #region extraction des images et horodatage
             List<Photo.PhotoInfo> listPhoto = new List<Photo.PhotoInfo>();
-            List<string> photoFiles = Directory.GetFiles(sPhotoPath).ToList<string>();
+            List<string> photoFiles = Directory.EnumerateFiles(sPhotoPath, "*.*", SearchOption.AllDirectories).Where(s => s.EndsWith(".JPG") || s.EndsWith(".jpg")).ToList<string>();
+
             foreach (string sPhoto in photoFiles)
             {
                 string dateString = recupDatePriseDeVueImage(sPhoto);
@@ -109,34 +114,73 @@ namespace PhotoGPS
                     listPhoto.Add(new Photo.PhotoInfo(sPhoto, date));
                 }
             }
+
+            // tri des photos par date de prise de vue
+            listPhoto = listPhoto.OrderBy(x => x.PriseDeVue).ToList();
             #endregion
 
             #region fait correspondre les heures des photos à des positions GPX
-            
-            //setGpsPosition()
+            foreach (Photo.PhotoInfo photo in listPhoto)
+            {
+                wptType type = listePoints.Find(t => (t.timeSpecified && t.time.ToLocalTime() >= photo.PriseDeVue && (t.time.ToLocalTime() - photo.PriseDeVue).TotalMinutes < 10));
+                if (type != null)
+                    photo.setGpsPosition((double)type.lat, (double)type.lon, type.time.ToLocalTime());
+            }
             #endregion
 
-
             // http://www.independent-software.com/gmap-net-beginners-tutorial-adding-clickable-markers-to-your-map-updated-for-visual-studio-2015-and-gmap-net-1-7/
-            List<PointLatLng> points = new List<PointLatLng>();
             GMapOverlay routes = new GMapOverlay("chemin");
-            //GMapOverlay markers = new GMapOverlay("markers");
+            List<PointLatLng> pointsRoute = new List<PointLatLng>();
+
+            GMapOverlay markers = new GMapOverlay("markers");
 
             foreach (wptType pt in listePoints)
             {
-                points.Add(new PointLatLng((double)pt.lat, (double)pt.lon));
-
-                //markers.Markers.Add(new GMarkerGoogle(new PointLatLng((double)pt.lat, (double)pt.lon), GMarkerGoogleType.blue_pushpin));
+                pointsRoute.Add(new PointLatLng((double)pt.lat, (double)pt.lon));
             }
 
-            GMapRoute route = new GMapRoute(points, "A walk in the park");
+            foreach (Photo.PhotoInfo photo in listPhoto)
+            {
+                if (photo.PositionValid)
+                {
+                    GMapMarker marker = new GMarkerGoogle(new PointLatLng((double)photo.Lat, (double)photo.Lon), ResizeWidth(photo.Path, 100));
+                    markers.Markers.Add(marker);
+                }
+            }
+
+            GMapRoute route = new GMapRoute(pointsRoute, "A walk in the park");
             route.Stroke = new Pen(Color.Red, 3);
             routes.Routes.Add(route);
             gmap.Overlays.Add(routes);
 
-            //gmap.Overlays.Add(markers);
+            gmap.Overlays.Add(markers);
 
             gmap.ZoomAndCenterRoute(route);
+        }
+
+        Bitmap ResizeWidth(string fileSource, int largeur)
+        {
+            Bitmap bmpResize = null;
+            using (Bitmap bmpSource = new Bitmap(fileSource))
+            {
+
+                int nNewLargeur, nNewHauteur;
+                if (bmpSource.Width > largeur)
+                {
+                    nNewLargeur = largeur;
+                    float ratio = (float)(largeur) / (float)bmpSource.Width;
+                    nNewHauteur = (int)(bmpSource.Height * ratio);
+                }
+                else
+                {
+                    nNewLargeur = bmpSource.Width;
+                    nNewHauteur = bmpSource.Height;
+                }
+
+                bmpResize = new Bitmap(bmpSource, nNewLargeur, nNewHauteur);
+            }
+
+            return bmpResize;
         }
 
 
