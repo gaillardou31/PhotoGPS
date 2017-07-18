@@ -112,7 +112,7 @@ namespace PhotoGPS
             #endregion
 
             #region fait correspondre les heures des photos à des positions GPX
-
+            
             //setGpsPosition()
             #endregion
 
