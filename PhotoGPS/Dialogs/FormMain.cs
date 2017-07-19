@@ -58,7 +58,7 @@ namespace PhotoGPS
         private void initMap()
         {
             gmap.ShowCenter = false;
-            gmap.MapProvider = GMap.NET.MapProviders.OviHybridMapProvider.Instance;
+            gmap.MapProvider = GMap.NET.MapProviders.BingHybridMapProvider.Instance;
             GMap.NET.GMaps.Instance.Mode = GMap.NET.AccessMode.ServerAndCache;
             gmap.DragButton = System.Windows.Forms.MouseButtons.Left;
             gmap.SetPositionByKeywords("Gavarnie, France");
@@ -72,12 +72,16 @@ namespace PhotoGPS
 
         private void displayTrack(gpxType track, string sPhotoPath)
         {
+            displayProgressionText("Début du traitement");
+
             gmap.Overlays.Clear();
             gmap.Refresh();
 
             #region extraction des points de passage
             if (track == null || track.trk == null)
                 return;
+
+            displayProgressionText("Extraction des points de passage");
 
             List<wptType> listePoints = new List<wptType>();
 
@@ -102,6 +106,8 @@ namespace PhotoGPS
             #endregion
 
             #region extraction des images et horodatage
+            displayProgressionText("Extraction des images et horodatage");
+
             List<Photo.PhotoInfo> listPhoto = new List<Photo.PhotoInfo>();
             List<string> photoFiles = Directory.EnumerateFiles(sPhotoPath, "*.*", SearchOption.AllDirectories).Where(s => s.EndsWith(".JPG") || s.EndsWith(".jpg")).ToList<string>();
 
@@ -120,6 +126,8 @@ namespace PhotoGPS
             #endregion
 
             #region fait correspondre les heures des photos à des positions GPX
+            displayProgressionText("Recherche de correspondance entre les photos et les points GPS");
+
             foreach (Photo.PhotoInfo photo in listPhoto)
             {
                 wptType type = listePoints.Find(t => (t.timeSpecified && t.time.ToLocalTime() >= photo.PriseDeVue && (t.time.ToLocalTime() - photo.PriseDeVue).TotalMinutes < 10));
@@ -139,13 +147,57 @@ namespace PhotoGPS
                 pointsRoute.Add(new PointLatLng((double)pt.lat, (double)pt.lon));
             }
 
-            foreach (Photo.PhotoInfo photo in listPhoto)
+            displayProgressionText("Redimension des photos");
+
+            // temp directory to store thumbs
+            string tempPath = System.IO.Path.GetTempPath() + Application.ProductName + Path.DirectorySeparatorChar + "thumbs";
+            if (Directory.Exists(tempPath) == false)
             {
-                if (photo.PositionValid)
+                try
                 {
-                    GMapMarker marker = new GMarkerGoogle(new PointLatLng((double)photo.Lat, (double)photo.Lon), ResizeWidth(photo.Path, 100));
-                    markers.Markers.Add(marker);
+                    Directory.CreateDirectory(tempPath);
                 }
+                catch { }
+            }
+
+            int index = 0;
+            List<Photo.PhotoInfo> listCorrespondante = listPhoto.FindAll(p => p.PositionValid);
+            foreach (Photo.PhotoInfo photo in listCorrespondante)
+            {
+                index++;
+
+                displayProgression(index, listCorrespondante.Count);
+                displayProgressionText("Redimension des photos " + index + "/" + listCorrespondante.Count);
+
+                //C:\Users\Nicolas\Documents\Visual Studio 2010\Projects\PhotoGPS\Examples\JPG\_A9A1192.jpg
+                // PhotoGPS_Examples_JPG__A9A1192.jpg
+                List<string> partNames = photo.Path.Split('\\').ToList<string>();
+                bool bContinue = true;
+                int partNumber = partNames.Count - 1;
+                string newName = partNames[partNumber];
+                partNumber--;
+                while (bContinue)
+                {
+                    if (partNames.Count - partNumber > 3)
+                        bContinue = false;
+                    if (partNumber < 0)
+                        bContinue = false;
+
+                    newName = partNames[partNumber] + "_" + newName;
+                    partNumber--;
+                }
+
+                string newDirectory = tempPath + Path.DirectorySeparatorChar + newName;
+                if (File.Exists(newDirectory) == false)
+                {
+                    // création de la miniature
+                    Bitmap bmp = ResizeWidth(photo.Path, 100);
+                    bmp.Save(newDirectory);
+                }
+
+                GMapMarker marker = new GMarkerGoogle(new PointLatLng((double)photo.Lat, (double)photo.Lon), new Bitmap(newDirectory));
+                marker.Tag = photo;
+                markers.Markers.Add(marker);
             }
 
             GMapRoute route = new GMapRoute(pointsRoute, "A walk in the park");
@@ -156,6 +208,9 @@ namespace PhotoGPS
             gmap.Overlays.Add(markers);
 
             gmap.ZoomAndCenterRoute(route);
+
+            displayProgressionText(String.Empty);
+            displayProgression(0, 0);
         }
 
         Bitmap ResizeWidth(string fileSource, int largeur)
@@ -241,7 +296,53 @@ namespace PhotoGPS
 
         private void gmap_OnMarkerClick(GMapMarker item, MouseEventArgs e)
         {
+            // Photo.PhotoInfo photo
+            if (item.Tag.GetType() == typeof(Photo.PhotoInfo))
+            {
+                Photo.PhotoInfo photo = (Photo.PhotoInfo)item.Tag;
+                //MessageBox.Show(this, photo.Path);
+            }
+        }
 
+        delegate void displayProgressionTextDelegate(string texte);
+        void displayProgressionText(string texte)
+        {
+            if (this.InvokeRequired)
+            {
+                displayProgressionTextDelegate d = new displayProgressionTextDelegate(displayProgressionText);
+                this.Invoke(d, new object[] { texte });
+            }
+            else
+            {
+                toolStripStatusLabelProgression.Text = texte;
+                statusStrip1.Refresh();
+            }
+        }
+
+        delegate void displayProgressionDelegate(int number, int total);
+        void displayProgression(int number, int total)
+        {
+            if (this.InvokeRequired)
+            {
+                displayProgressionDelegate d = new displayProgressionDelegate(displayProgression);
+                this.Invoke(d, new object[] { number, total });
+            }
+            else
+            {
+                toolStripProgressBarProgression.Minimum = 0;
+                toolStripProgressBarProgression.Maximum = total;
+                toolStripProgressBarProgression.Value = number;
+                statusStrip1.Refresh();
+            }
+        }
+
+        private void gmap_OnMarkerEnter(GMapMarker item)
+        {
+            if (item.Tag.GetType() == typeof(Photo.PhotoInfo))
+            {
+                Photo.PhotoInfo photo = (Photo.PhotoInfo)item.Tag;
+                pictureBoxSelected.ImageLocation = photo.Path;
+            }
         }
     }
 }
