@@ -13,6 +13,7 @@ using GMap.NET;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using System.Diagnostics;
 
 
 namespace PhotoGPS
@@ -344,5 +345,86 @@ namespace PhotoGPS
                 pictureBoxSelected.ImageLocation = photo.Path;
             }
         }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            /*
+            foreach (Photo.PhotoInfo photo in listPhoto)
+            {
+            }
+            */
+
+        }
+
+        void writeGPSonImage(List<Photo.PhotoInfo> liste)
+        {
+
+            //https://code.google.com/archive/p/exiflibrary/wikis/ExifLibrary.wiki
+
+
+            /*
+Image mage = Image.FromFile(Path);
+PropertyItem item = mage.GetPropertyItem(306);
+item.Value = System.Text.ASCIIEncoding.ASCII.GetBytes("2012:12:12 17:17:17");
+image.SetPropertyItem(item);
+image.Save();
+*/
+        }
+
+        private void compileMultiPgxToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            fbd.SelectedPath = Properties.Settings.Default.lastPhotoPath;
+            fbd.ShowNewFolderButton = false;
+            DialogResult dr2 = fbd.ShowDialog(this);
+            if (dr2 != System.Windows.Forms.DialogResult.OK)
+                return;
+
+            Properties.Settings.Default.lastPhotoPath = fbd.SelectedPath;
+            Properties.Settings.Default.Save();
+
+            compileMultiGpx(fbd.SelectedPath);
+        }
+
+        private void compileMultiGpx(string path)
+        {
+            List<string> directories = Directory.GetDirectories(path).ToList();
+            List<gpxType> tracesGPX = new List<gpxType>();
+            List<trksegType> listSegments = new List<trksegType>();
+
+            foreach (string dir in directories)
+            {
+                List<string> files = Directory.GetFiles(dir, "*.gpx").ToList();
+                foreach (string file in files)
+                {
+                    tracesGPX.Add(Helpers.tools.Deserialize(file));
+                }
+            }
+
+            foreach (gpxType trace in tracesGPX)
+            {
+                if (trace.trk == null || trace.trk.Length == 0)
+                    break;
+
+                List<trkType> trkTypes = trace.trk.ToList();
+                foreach (trkType trkType in trkTypes)
+                {
+                    if (trkType.trkseg == null || trkType.trkseg.Length == 0)
+                        break;
+
+                    foreach (trksegType t in trkType.trkseg.ToList())
+                        listSegments.Add(t);
+                }
+            }
+
+            gpxType gpxOut = new gpxType();
+            gpxOut.creator = "Nicolas PERDU";
+            gpxOut.trk = new trkType[1] { new trkType() };
+            gpxOut.trk[0].desc = "Complile multi files";
+            gpxOut.trk[0].trkseg = listSegments.ToArray();
+
+            Helpers.tools.Serialize(gpxOut, path + Path.DirectorySeparatorChar + "compile multi gpx.gpx");
+        }
+
     }
 }

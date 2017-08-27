@@ -33,12 +33,15 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fichierToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ouvrirGPXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.quitterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabelProgression = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripProgressBarProgression = new System.Windows.Forms.ToolStripProgressBar();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.pictureBoxSelected = new System.Windows.Forms.PictureBox();
+            this.tracesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.compileMultiPgxToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -79,7 +82,8 @@
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fichierToolStripMenuItem});
+            this.fichierToolStripMenuItem,
+            this.tracesToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(771, 24);
@@ -90,6 +94,7 @@
             // 
             this.fichierToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ouvrirGPXToolStripMenuItem,
+            this.toolStripMenuItem1,
             this.quitterToolStripMenuItem});
             this.fichierToolStripMenuItem.Name = "fichierToolStripMenuItem";
             this.fichierToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
@@ -98,14 +103,21 @@
             // ouvrirGPXToolStripMenuItem
             // 
             this.ouvrirGPXToolStripMenuItem.Name = "ouvrirGPXToolStripMenuItem";
-            this.ouvrirGPXToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
+            this.ouvrirGPXToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
             this.ouvrirGPXToolStripMenuItem.Text = "Ouvrir GPX";
             this.ouvrirGPXToolStripMenuItem.Click += new System.EventHandler(this.ouvrirGPXToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(187, 22);
+            this.toolStripMenuItem1.Text = "Write position on JPG";
+            this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // quitterToolStripMenuItem
             // 
             this.quitterToolStripMenuItem.Name = "quitterToolStripMenuItem";
-            this.quitterToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
+            this.quitterToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
             this.quitterToolStripMenuItem.Text = "Quitter";
             this.quitterToolStripMenuItem.Click += new System.EventHandler(this.quitterToolStripMenuItem_Click);
             // 
@@ -158,6 +170,21 @@
             this.pictureBoxSelected.TabIndex = 0;
             this.pictureBoxSelected.TabStop = false;
             // 
+            // tracesToolStripMenuItem
+            // 
+            this.tracesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.compileMultiPgxToolStripMenuItem});
+            this.tracesToolStripMenuItem.Name = "tracesToolStripMenuItem";
+            this.tracesToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
+            this.tracesToolStripMenuItem.Text = "Traces";
+            // 
+            // compileMultiPgxToolStripMenuItem
+            // 
+            this.compileMultiPgxToolStripMenuItem.Name = "compileMultiPgxToolStripMenuItem";
+            this.compileMultiPgxToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.compileMultiPgxToolStripMenuItem.Text = "Compile multi pgx";
+            this.compileMultiPgxToolStripMenuItem.Click += new System.EventHandler(this.compileMultiPgxToolStripMenuItem_Click);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -198,6 +225,9 @@
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBarProgression;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.PictureBox pictureBoxSelected;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem tracesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem compileMultiPgxToolStripMenuItem;
     }
 }
 

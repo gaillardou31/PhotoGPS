@@ -9,11 +9,11 @@ namespace Helpers
 {
     class tools
     {
-        static public void Serialize(gpxType gpx)
+        static public void Serialize(gpxType gpx, string outFile)
         {
             XmlSerializer serializer = new XmlSerializer(typeof(gpxType));
             //using (TextWriter writer = new StreamWriter(@"C:\Xml.xml"))
-            using (TextWriter writer = new StreamWriter("out.gpx"))
+            using (TextWriter writer = new StreamWriter(outFile))
             {
                 serializer.Serialize(writer, gpx);
             }

@@ -40,6 +40,9 @@
     <StartupObject>PhotoGPS.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ExifLibrary">
+      <HintPath>..\ExifLibrary_v0.18\ExifLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="GMap.NET.Core">
       <HintPath>..\GMap.NET.WindowsForms\Release-NETv4.0\GMap.NET.Core.dll</HintPath>
     </Reference>
